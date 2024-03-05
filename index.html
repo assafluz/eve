@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatGPT Assistant Tester</title>
+</head>
+<body>
+    <h1>ChatGPT Assistant Tester</h1>
+    <form id="chatForm">
+        <label for="userInput">Your Message:</label>
+        <input type="text" id="userInput" name="userMessage" required>
+        <button type="submit">Send</button>
+    </form>
+    <div id="chatHistory"></div>
+
+    <script>
+        document.getElementById('chatForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting in the traditional way
+
+            var userInput = document.getElementById('userInput').value;
+            fetch('http://127.0.0.1:5000/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update to handle the assistant's response format correctly
+                var chatHistory = document.getElementById('chatHistory');
+                var userMessage = document.createElement('p');
+                userMessage.textContent = `You: ${userInput}`;
+                chatHistory.appendChild(userMessage);
+
+                // Handle the response assuming data contains the structured response from the assistant
+                if (data && data.choices && data.choices.length > 0 && data.choices[0].message) {
+                    var assistantMessage = document.createElement('p');
+                    assistantMessage.textContent = `Assistant: ${data.choices[0].message.content}`;
+                    chatHistory.appendChild(assistantMessage);
+                }
+
+                document.getElementById('userInput').value = ''; // Clear input after sending
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
