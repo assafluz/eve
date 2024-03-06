@@ -23,13 +23,11 @@ print(f"ORGANIZATION_ID: {ORGANIZATION_ID}")
 print(f"ASSISTANT_ID: {ASSISTANT_ID}")
 
 # Set up logging
-logging.basicConfig(level=logging.ERROR)  # Configure logging level to capture errors
-
+logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
 
 @app.route('/')
 def index():
     return send_file('index.html')
-
 
 @app.route('/ask', methods=['POST'])
 def ask():
@@ -53,6 +51,8 @@ def ask():
         session_response.raise_for_status()
         session_id = session_response.json()['id']
 
+        logging.debug(f"Session ID: {session_id}")
+
         # Send the user query to the assistant
         message = {
             'role': 'user',
@@ -62,12 +62,13 @@ def ask():
                                  json={'messages': [message]}, headers=headers)
         response.raise_for_status()
 
+        logging.debug(f"Assistant response: {response.json()}")
+
         return jsonify(response.json())
     except requests.exceptions.RequestException as e:
         error_message = str(e)
         logging.error(f"Error from OpenAI API: {error_message}")  # Log error message
         return jsonify({"error": "Failed to communicate with OpenAI API", "details": error_message}), 500
-
 
 if __name__ == '__main__':
     app.run(debug=True)  # Consider setting debug to False in production
