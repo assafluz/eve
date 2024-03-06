@@ -23,7 +23,7 @@ print(f"ORGANIZATION_ID: {ORGANIZATION_ID}")
 print(f"ASSISTANT_ID: {ASSISTANT_ID}")
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG)  # Set logging level to DEBUG
+logging.basicConfig(level=logging.ERROR)  # Configure logging level to capture errors
 
 @app.route('/')
 def index():
@@ -51,8 +51,6 @@ def ask():
         session_response.raise_for_status()
         session_id = session_response.json()['id']
 
-        logging.debug(f"Session ID: {session_id}")
-
         # Send the user query to the assistant
         message = {
             'role': 'user',
@@ -61,8 +59,6 @@ def ask():
         response = requests.post(f'https://api.openai.com/v1/assistants/{session_id}/messages',
                                  json={'messages': [message]}, headers=headers)
         response.raise_for_status()
-
-        logging.debug(f"Assistant response: {response.json()}")
 
         return jsonify(response.json())
     except requests.exceptions.RequestException as e:
