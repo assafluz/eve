@@ -66,5 +66,6 @@ def ask():
         logging.error(f"Error from OpenAI API: {error_message}")  # Log error message
         return jsonify({"error": "Failed to communicate with OpenAI API", "details": error_message}), 500
 
+
 if __name__ == '__main__':
     app.run(debug=True)  # Consider setting debug to False in production
