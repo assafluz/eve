@@ -49,7 +49,7 @@ def ask():
 
     try:
         # Create a new assistance session
-        session_response = requests.post('https://api.openai.com/v1/assistance-sessions', json=data, headers=headers)
+        session_response = requests.post('https://api.openai.com/v1/assistants', json=data, headers=headers)
         session_response.raise_for_status()
         session_id = session_response.json()['id']
 
@@ -58,7 +58,7 @@ def ask():
             'role': 'user',
             'content': user_query
         }
-        response = requests.post(f'https://api.openai.com/v1/assistance-sessions/{session_id}/messages',
+        response = requests.post(f'https://api.openai.com/v1/assistants/{session_id}/messages',
                                  json={'messages': [message]}, headers=headers)
         response.raise_for_status()
 
