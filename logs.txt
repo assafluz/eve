@@ -1,0 +1,31 @@
+  INFO:root:Server initiated successfully.
+INFO:root:Starting server at http://127.0.0.1:5000
+INFO:root:Organization ID: org-uRPhqXWVk1ilV90xTmWDQKS2
+INFO:root:Assistant ID: asst_3OPmzqJNAEyCvymT6pHvkrJz
+INFO:root:API Key: sk-3KZTZHg3utXor***********************************
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 211-065-854
+INFO:werkzeug:127.0.0.1 - - [07/Mar/2024 14:12:54] "OPTIONS /ask HTTP/1.1" 200 -
+INFO:root:Sending request to OpenAI API with URL: https://api.openai.com/v1/assistants/asst_3OPmzqJNAEyCvymT6pHvkrJz/messages and data: {'prompt': 'sss', 'model': 'gpt-4-turbo-preview', 'max_tokens': 150, 'temperature': 0.7}
+INFO:root:Received response from OpenAI API: {
+  "error": {
+    "message": "Invalid URL (POST /v1/assistants/asst_3OPmzqJNAEyCvymT6pHvkrJz/messages)",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": null
+  }
+}
+ERROR:root:Error from OpenAI API: 404 Client Error: Not Found for url: https://api.openai.com/v1/assistants/asst_3OPmzqJNAEyCvymT6pHvkrJz/messages
+INFO:werkzeug:127.0.0.1 - - [07/Mar/2024 14:12:55] "[35m[1mPOST /ask HTTP/1.1[0m" 500 -
+INFO:werkzeug:127.0.0.1 - - [07/Mar/2024 14:13:03] "OPTIONS /ask HTTP/1.1" 200 -
+INFO:root:Sending request to OpenAI API with URL: https://api.openai.com/v1/assistants/asst_3OPmzqJNAEyCvymT6pHvkrJz/messages and data: {'prompt': 'sss', 'model': 'gpt-4-turbo-preview', 'max_tokens': 150, 'temperature': 0.7}
+INFO:root:Received response from OpenAI API: {
+  "error": {
+    "message": "Invalid URL (POST /v1/assistants/asst_3OPmzqJNAEyCvymT6pHvkrJz/messages)",
+    "type": "invalid_request_error",
+    "param": null,
+    "code": null
+  }
+}
+ERROR:root:Error from OpenAI API: 404 Client Error: Not Found for url: https://api.openai.com/v1/assistants/asst_3OPmzqJNAEyCvymT6pHvkrJz/messages
+INFO:werkzeug:127.0.0.1 - - [07/Mar/2024 14:13:04] "[35m[1mPOST /ask HTTP/1.1[0m" 500 -
