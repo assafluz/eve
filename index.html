@@ -14,38 +14,7 @@
     </form>
     <div id="chatHistory"></div>
 
-    <!-- Add button to archive chat history -->
-    <button id="archiveButton">Archive Chat History</button>
-
     <script>
-        var requestHistory = []; // Array to store the chat history
-
-        // Function to handle archiving chat history
-        function archiveChatHistory() {
-            var chatHistoryText = requestHistory.join('\n');
-            fetch('http://127.0.0.1:5000/archive_chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain',
-                },
-                body: chatHistoryText
-            })
-            .then(response => response.text())
-            .then(data => {
-                alert('Chat history archived successfully!');
-                clearChatHistory(); // Clear chat history from the page after archiving
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-        }
-
-        // Function to clear chat history from the page
-        function clearChatHistory() {
-            document.getElementById('chatHistory').innerHTML = '';
-            requestHistory = []; // Clear request history array
-        }
-
         document.getElementById('chatForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent the form from submitting in the traditional way
 
@@ -72,20 +41,11 @@
                     chatHistory.appendChild(assistantMessage);
                 }
 
-                // Add current request to requestHistory array
-                requestHistory.push(userInput);
-
                 document.getElementById('userInput').value = ''; // Clear input after sending
             })
             .catch((error) => {
                 console.error('Error:', error);
             });
-        });
-
-        // Add event listener for the archive button
-        document.getElementById('archiveButton').addEventListener('click', function(event) {
-            event.preventDefault();
-            archiveChatHistory();
         });
     </script>
 </body>
