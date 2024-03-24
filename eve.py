@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify, send_file
-import requests
 from flask_cors import CORS
+import requests
 from dotenv import load_dotenv
 import os
 import logging
-import re
+from datetime import datetime
 
 # Load environment variables
 load_dotenv('.env')
@@ -19,15 +19,69 @@ ORGANIZATION_ID = os.getenv("OPENAI_ORGANIZATION_ID")
 ASSISTANT_ID = os.getenv("OPENAI_ASSISTANT_ID")
 
 # Mask API key for printing and logging
-masked_api_key = re.sub(r'(?<=.{16}).', '*', OPENAI_API_KEY)
+masked_api_key = "*" * (len(OPENAI_API_KEY) - 4) + OPENAI_API_KEY[-4:]
 
 # Set up logging
 log_file = 'logs.txt'
-logging.basicConfig(level=logging.INFO, filename=log_file,
-                    filemode='w')  # Overwrite logs each time the application starts
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename=log_file,
+                    filemode='w')
 
-# Log server initiation status
-logging.info("Server initiated successfully.")
+# Log server initiation status and current time only once
+current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+logging.info(f"{current_time}: Server initiated successfully.")
+print(f"{current_time}: Server initiated successfully.")
+
+
+def create_thread():
+    headers = {
+        'Authorization': f'Bearer {OPENAI_API_KEY}',
+        'Content-Type': 'application/json',
+        'OpenAI-Organization': ORGANIZATION_ID,
+        'OpenAI-Beta': 'assistants=v1'
+    }
+    data = {}
+
+    try:
+        api_url = f'https://api.openai.com/v1/threads'
+        response = requests.post(api_url, json=data, headers=headers)
+        response.raise_for_status()
+        return response.json().get('id')
+    except requests.exceptions.RequestException as e:
+        error_message = str(e)
+        logging.error(f"Error from OpenAI API: {error_message}")
+        return None
+
+
+def add_message_to_thread(thread_id, content):
+    headers = {
+        'Authorization': f'Bearer {OPENAI_API_KEY}',
+        'Content-Type': 'application/json',
+        'OpenAI-Organization': ORGANIZATION_ID,
+        'OpenAI-Beta': 'assistants=v1'
+    }
+    data = {
+        'role': 'user',
+        'content': content
+    }
+
+    try:
+        api_url = f'https://api.openai.com/v1/assistants/{ASSISTANT_ID}/'
+        response = requests.post(api_url, json=data, headers=headers)
+
+        # Log request and response details to logs.txt
+        logging.info(f"Request to OpenAI API: POST {api_url}, Headers: {headers}, Body: {data}")
+        logging.info(f"Response from OpenAI API: Status Code - {response.status_code}, Body - {response.text}")
+
+        # Print request and response details to console
+        print(f"Request to OpenAI API: POST {api_url}, Headers: {headers}, Body: {data}")
+        print(f"Response from OpenAI API: Status Code - {response.status_code}, Body - {response.text}")
+
+        response.raise_for_status()
+        return True
+    except requests.exceptions.RequestException as e:
+        error_message = str(e)
+        logging.error(f"Error from OpenAI API: {error_message}")
+        return False
 
 
 @app.route('/')
@@ -41,10 +95,18 @@ def ask():
     if not user_query:
         return jsonify({"error": "No query provided"}), 400
 
+    thread_id = create_thread()
+    if not thread_id:
+        return jsonify({"error": "Failed to create conversation thread"}), 500
+
+    if not add_message_to_thread(thread_id, user_query):
+        return jsonify({"error": "Failed to add message to conversation thread"}), 500
+
     headers = {
         'Authorization': f'Bearer {OPENAI_API_KEY}',
         'Content-Type': 'application/json',
-        'OpenAI-Organization': ORGANIZATION_ID
+        'OpenAI-Organization': ORGANIZATION_ID,
+        'OpenAI-Beta': 'assistants=v1'
     }
     data = {
         'prompt': user_query,
@@ -54,25 +116,26 @@ def ask():
     }
 
     try:
-        # Construct the correct URL for the OpenAI API request
-        api_url = f'https://api.openai.com/v1/assistants/{ASSISTANT_ID}/messages'
-
-        # Log request to OpenAI API
-        logging.info(f"Sending request to OpenAI API with URL: {api_url} and data: {data}")
+        api_url = f'https://api.openai.com/v1/assistants/{ASSISTANT_ID}/'
+        print(f"API URL: {api_url}")
+        print(f"Request to OpenAI API: POST {api_url}")
+        print(f"Request body: {data}")
+        print(f"Request headers: {headers}")
 
         response = requests.post(api_url, json=data, headers=headers)
 
-        # Log response from OpenAI API
-        logging.info(f"Received response from OpenAI API: {response.text}")
+        print(f"Response status code: {response.status_code}")
+        print(f"Response body: {response.text}")
+
+        logging.info(f"Request to OpenAI API: POST {api_url}, Headers: {headers}, Body: {data}")
+        logging.info(f"Response from OpenAI API: Status Code - {response.status_code}, Body - {response.text}")
 
         response.raise_for_status()
-
         return jsonify(response.json())
     except requests.exceptions.RequestException as e:
         error_message = str(e)
-        logging.error(f"Error from OpenAI API: {error_message}")  # Log error message
-        print(f"Error from OpenAI API: {error_message}")  # Print error message to console
-        return jsonify({"error": "Failed to communicate with OpenAI API", "details": error_message}), 500
+        logging.error(f"Error from OpenAI API: {error_message}")
+        return jsonify({"error": "Failed to fetch response from OpenAI API"}), 500
 
 
 if __name__ == '__main__':
@@ -86,4 +149,4 @@ if __name__ == '__main__':
     logging.info(f"Assistant ID: {ASSISTANT_ID}")
     print(f"API Key: {masked_api_key}")
     logging.info(f"API Key: {masked_api_key}")
-    app.run(debug=True, host=host, port=port)  # Consider setting debug to False in production
+    app.run(debug=True, host=host, port=port)

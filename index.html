@@ -24,21 +24,24 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ query: userInput })
+                body: JSON.stringify({ query: userInput }) // Corrected key to match Flask server's expectation
             })
             .then(response => response.json())
             .then(data => {
-                // Update to handle the assistant's response format correctly
                 var chatHistory = document.getElementById('chatHistory');
                 var userMessage = document.createElement('p');
                 userMessage.textContent = `You: ${userInput}`;
                 chatHistory.appendChild(userMessage);
 
-                // Handle the response assuming data contains the structured response from the assistant
-                if (data && data.choices && data.choices.length > 0 && data.choices[0].message) {
+                // Handle the response from the server
+                if (data && data.thread_id) {
                     var assistantMessage = document.createElement('p');
-                    assistantMessage.textContent = `Assistant: ${data.choices[0].message.content}`;
+                    assistantMessage.textContent = `Assistant: Thread ID - ${data.thread_id}`;
                     chatHistory.appendChild(assistantMessage);
+                } else {
+                    var errorMessage = document.createElement('p');
+                    errorMessage.textContent = `Error: ${data.error}`;
+                    chatHistory.appendChild(errorMessage);
                 }
 
                 document.getElementById('userInput').value = ''; // Clear input after sending
